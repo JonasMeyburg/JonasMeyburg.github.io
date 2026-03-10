@@ -299,7 +299,7 @@
         .slide.active .gallery-caption:hover h2 { color: #ffffff; }
         .slide.active .gallery-caption:hover p { color: rgba(255, 255, 255, 0.85); }
 
-        /* --- Mobile Responsiveness --- */
+/* --- Mobile Responsiveness --- */
         @media (max-width: 768px) {
             .hero-title { 
                 top: 15vh; 
@@ -312,12 +312,14 @@
             
             .slide .gallery-caption { 
                 left: 50%; 
+                /* Anchors the bottom exactly above the UI elements:
+                   4vh (UI offset) + 3rem (Social icons) + 2rem (margin) + 3.5rem (Archive Btn approx height) + 2rem (desired gap) */
+                bottom: calc(4vh + 10.5rem); 
                 transform: translateX(-50%) translateY(0); 
-                bottom: calc(4vh + 110px); /* Safely clear of the Archive button */
                 width: fit-content; 
                 max-width: 85vw; 
                 text-align: center; 
-                background: rgba(255, 255, 255, 0.08); /* Distinct touchable pill */
+                background: rgba(255, 255, 255, 0.08); 
                 padding: 0.8rem 1.8rem; 
                 border-radius: 2.5rem;
                 cursor: pointer;
@@ -325,6 +327,7 @@
                 transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
             }
 
+            /* ... keep the rest of your mobile media query exactly as is ... */
             .gallery-caption h2 { letter-spacing: 0.1em; margin: 0; transition: margin 0.4s ease; }
             
             /* Hide paragraph by default on mobile for the clean pill look */
@@ -853,3 +856,4 @@
     </script>
 </body>
 </html>
+
