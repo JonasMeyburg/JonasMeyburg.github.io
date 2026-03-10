@@ -301,25 +301,71 @@
 
         /* --- Mobile Responsiveness --- */
         @media (max-width: 768px) {
-            .hero-title { top: 12vh; letter-spacing: 0.25em; } 
+            .hero-title { 
+                top: 15vh; 
+                font-size: clamp(1.4rem, 6.5vw, 2rem); 
+                letter-spacing: 0.15em; 
+                width: 90vw;
+                text-align: center;
+                white-space: normal; 
+            } 
             
             .slide .gallery-caption { 
                 left: 50%; 
                 transform: translateX(-50%) translateY(0); 
-                bottom: calc(4vh + 150px); 
+                bottom: calc(4vh + 110px); /* Safely clear of the Archive button */
                 width: fit-content; 
                 max-width: 85vw; 
                 text-align: center; 
-                background: rgba(255, 255, 255, 0.05); 
-                padding: 1.2rem 2rem; 
-                border-radius: 1.2rem;
+                background: rgba(255, 255, 255, 0.08); /* Distinct touchable pill */
+                padding: 0.8rem 1.8rem; 
+                border-radius: 2.5rem;
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+                transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1);
             }
-            .gallery-caption h2 { letter-spacing: 0.1em; margin: 0 0 0.35rem 0; }
-            .gallery-caption p { line-height: 1.4; }
+
+            .gallery-caption h2 { letter-spacing: 0.1em; margin: 0; transition: margin 0.4s ease; }
             
-            .slide.active .gallery-caption:active, .slide.active .gallery-caption:hover {
-                transform: translateX(-50%) translateY(-3px);
-                background: rgba(10, 10, 10, 0.9);
+            /* Hide paragraph by default on mobile for the clean pill look */
+            .gallery-caption p { 
+                max-height: 0; 
+                opacity: 0; 
+                overflow: hidden;
+                margin: 0;
+                transition: max-height 0.5s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.4s ease, margin 0.4s ease;
+            }
+            
+            /* The Active/Expanded Mobile State */
+            .slide .gallery-caption.is-expanded {
+                background: rgba(8, 8, 8, 0.85);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+                backdrop-filter: blur(16px) saturate(100%);
+                padding: 1.5rem 2rem;
+                border-radius: 1.2rem;
+                transform: translateX(-50%) translateY(-5px);
+                box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            }
+
+            .slide .gallery-caption.is-expanded h2 {
+                margin: 0 0 0.35rem 0;
+            }
+
+            .slide .gallery-caption.is-expanded p {
+                max-height: 150px; 
+                opacity: 1;
+            }
+
+            /* Override the standard hover state on mobile to avoid double-triggering logic */
+            .slide.active .gallery-caption:active, 
+            .slide.active .gallery-caption:hover {
+                transform: translateX(-50%) translateY(0);
+                background: rgba(255, 255, 255, 0.08);
+            }
+            .slide.active .gallery-caption.is-expanded:active, 
+            .slide.active .gallery-caption.is-expanded:hover {
+                transform: translateX(-50%) translateY(-5px);
+                background: rgba(8, 8, 8, 0.85);
             }
         }
 
@@ -420,7 +466,7 @@
         </div>
 
         <div class="slide" data-index="3">
-            <img data-src="WebImage3.jpg" src="" class="gallery-img" alt="Artwork: MoCap">
+            <img data-src="WebImage3.JPG" src="" class="gallery-img" alt="Artwork: MoCap">
             <div class="image-scrim"></div>
             <div class="gallery-caption">
                 <h2>Mo-Cap</h2>
@@ -506,6 +552,7 @@
         /* --- Scroll / Slide System --- */
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
+        const galleryCaptions = document.querySelectorAll('.gallery-caption'); // Selected for mobile interactions
         let dots = []; 
         const totalSlides = slides.length;
         let isScrolling = false;
@@ -544,6 +591,9 @@
             if(newIndex < 0 || newIndex >= totalSlides || isScrolling || isModalOpen) return;
             isScrolling = true;
             
+            // Retract mobile captions when changing slides
+            galleryCaptions.forEach(c => c.classList.remove('is-expanded'));
+
             // Preload the target slide and the one immediately after it
             preloadImage(newIndex);
             preloadImage(newIndex + 1);
@@ -584,6 +634,30 @@
             else if(touchEndY - touchStartY > 50) updateSlides(currentSlide - 1);
         }, {passive: true});
 
+        /* --- Mobile UI Interactions (The Expandable Pill) --- */
+        galleryCaptions.forEach(caption => {
+            caption.addEventListener('click', (e) => {
+                if (window.innerWidth <= 768) {
+                    e.stopPropagation(); // Prevent the document click listener from firing immediately
+                    
+                    // Close all other captions first
+                    galleryCaptions.forEach(c => {
+                        if (c !== caption) c.classList.remove('is-expanded');
+                    });
+                    
+                    // Toggle the clicked caption
+                    caption.classList.toggle('is-expanded');
+                }
+            });
+        });
+
+        // Close expanded caption when tapping anywhere else on the document
+        document.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                galleryCaptions.forEach(c => c.classList.remove('is-expanded'));
+            }
+        });
+
         /* --- Modal Interaction Logic --- */
         const imprintBtn = document.getElementById('btn-imprint');
         const modalOverlay = document.getElementById('imprint-modal');
@@ -592,7 +666,7 @@
         function openModal() { modalOverlay.classList.add('active'); isModalOpen = true; }
         function closeModal() { modalOverlay.classList.remove('active'); isModalOpen = false; }
 
-        imprintBtn.addEventListener('click', openModal);
+        imprintBtn.addEventListener('click', (e) => { e.stopPropagation(); openModal(); });
         closeModalBtn.addEventListener('click', closeModal);
         modalOverlay.addEventListener('click', (e) => { if(e.target === modalOverlay) closeModal(); });
 
