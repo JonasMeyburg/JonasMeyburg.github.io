@@ -1,0 +1,18 @@
+# Allow text/search bots to read the site and the JSON-LD
+User-agent: *
+Allow: /
+
+# Block specific visual/dataset scrapers from crawling images
+User-agent: Googlebot-Image
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /*.jpg$
+Disallow: /*.webm$
+
+User-agent: GPTBot
+Disallow: /*.jpg$
+Disallow: /*.webm$
