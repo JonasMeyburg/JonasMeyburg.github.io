@@ -122,12 +122,13 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        :root {
-            --bg-color: #030303;
-            --text-color: #f2f0e9;
-            --overlay-start: rgba(3, 3, 3, 0.1);
-            --overlay-end: rgba(3, 3, 3, 0.95);
-        }
+:root {
+    --bg-color: #030303;
+    --text-color: #f2f0e9;
+    --overlay-start: rgba(3, 3, 3, 0.1);
+    --overlay-end: rgba(3, 3, 3, 0.95);
+    --caption-bottom-offset: 160px; /* Fallback */
+}
 
         body, html {
             margin: 0; padding: 0; width: 100%; height: 100%;
@@ -314,7 +315,7 @@
                 left: 50%; 
                 /* Anchors the bottom exactly above the UI elements:
                    4vh (UI offset) + 3rem (Social icons) + 2rem (margin) + 3.5rem (Archive Btn approx height) + 2rem (desired gap) */
-                bottom: calc(4vh + 10.5rem); 
+                bottom: var(--caption-bottom-offset); /* Dynamically injected height */
                 transform: translateX(-50%) translateY(0); 
                 width: fit-content; 
                 max-width: 85vw; 
@@ -560,7 +561,31 @@
         const totalSlides = slides.length;
         let isScrolling = false;
         let isModalOpen = false;
+/* --- Mobile Viewport Geometry Fix --- */
+function calculateCaptionOffset() {
+    if (window.innerWidth > 768) return; // Only run on mobile
 
+    const uiContainer = document.querySelector('.ui-container');
+    if (!uiContainer) return;
+
+    // 1. Get the exact rendered height of the UI block
+    const uiRect = uiContainer.getBoundingClientRect();
+    
+    // 2. Calculate the 4vh distance from the bottom
+    const bottomVhOffset = window.innerHeight * 0.04;
+    
+    // 3. Add desired gap (24px to match your internal UI spacing)
+    const gap = 24; 
+
+    // 4. Calculate total offset and apply it
+    const totalOffset = uiRect.height + bottomVhOffset + gap;
+    document.documentElement.style.setProperty('--caption-bottom-offset', `${totalOffset}px`);
+}
+
+// Run on load, and listen for screen resizing (e.g., rotating the phone)
+window.addEventListener('resize', calculateCaptionOffset);
+window.addEventListener('orientationchange', calculateCaptionOffset);
+calculateCaptionOffset();
         function initGallery() {
             const indicatorsContainer = document.getElementById('indicators');
             slides.forEach((slide, idx) => {
@@ -856,4 +881,5 @@
     </script>
 </body>
 </html>
+
 
